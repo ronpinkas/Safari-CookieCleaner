@@ -10,8 +10,8 @@ on main()
 	# NON GRIDY so use full name INCLUDING .com etc.!
 	set whiteList to {"amazon.com", Â
 		"ebay.com", Â
-		"facebook.com","facebook.net",Â
-		"github.com", "google.com", "ajax.googleapis.com", "fonts.googleapis.com", "googleusercontent.com", "gstatic.com", Â
+		"facebook.com", "facebook.net", Â
+		"github.com", ".githubusercontent.com", "google.com", ".googleapis.com", "googleusercontent.com", "gstatic.com", Â
 		"instagram.com", "cdninstagram.com", Â
 		"netflix.com", Â
 		"paypal.com", Â
@@ -160,7 +160,10 @@ on main()
 								
 								# First option is a gridier option which may match more thann intennded but may be desired by some. 
 								--if rowSite contains whiteSite then
-								if domainName is equal to whiteSite as text then
+								if first character of whiteSite = "." and domainName contains whiteSite then
+									set whiteListed to true
+									exit repeat
+								else if domainName is equal to whiteSite as text then
 									set whiteListed to true
 									exit repeat
 								end if
