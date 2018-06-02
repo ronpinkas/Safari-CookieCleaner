@@ -10,13 +10,14 @@ on main()
 	# NON GRIDY so use full name INCLUDING .com etc.!
 	set whiteList to {"amazon.com", Â
 		"ebay.com", Â
-		"github.com", "google.com", "googleusercontent.com", Â
+		"github.com", "google.com", "ajax.googleapis.com", "fonts.googleapis.com", "googleusercontent.com", "gstatic.com", Â
 		"instagram.com", Â
 		"netflix.com", Â
 		"paypal.com", Â
 		"twitter.com", Â
 		"visualstudio.com", Â
-		"whatsapp.com"}
+		"whatsapp.com", Â
+		"youtube.com"}
 	
 	# GRIDY - so be careful as ANY domain name CONTAINING any of these tokens (but NOT WHITE listed) will be considered junk!
 	# IF FIRST Element is "*" then the junkList will be ignored and ALL EXCEPT whiteList will be deleted!
@@ -25,7 +26,7 @@ on main()
 		"cdn", "chartbeat", "chimp", "click", "cloudflare", "cloudfront", "cnbc", "cohesion", "cookie", "count", "coust", "crazy", "createjs", "criteo", "crsspxl", "crwd", Â
 		"dazz", "demdex", "dental", "desk", "digitech", "disqus", "docashop", Â
 		"exelator", "expose", "ggpht", "facebook", "fbcdn", "google-analytics", "googleadservices", "googletag", "googleusercontent", "gravatar", "gstatic", Â
-		"home", "imgur", "jeeng", "link", "local", "mac", "networks", "newrelic", "omny", "opentok", "optimizer", "parsely", "petametric", "pir.fm", "porn","quantserve", Â
+		"home", "imgur", "jeeng", "link", "local", "mac", "networks", "newrelic", "omny", "opentok", "optimizer", "parsely", "petametric", "pir.fm", "porn", "quantserve", Â
 		"reddit", "resources", "score", "sekindo", "sstatic", "stack", "taboola", "track", "truspilot", "twimg", "user", "visistat", "ytimg"}
 	
 	set homePath to (path to home folder)
