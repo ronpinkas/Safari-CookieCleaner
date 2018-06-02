@@ -7,20 +7,26 @@
 on main()
 	set debugLog to false
 	
-	# NON GRIDY so use full name INCLUDING .com etc.!
+	# Item starting with "*" will match domain names ENDING with its subssequent text 
+	# Item endiding with "*" will match domain names BEGINING with its preceding text
+	# Items starting and ending with "*" will match domain names CONTAINING its enclosed text	
+	# Otherwise NON GRIDY so use full name INCLUDING .com etc.!
 	set whiteList to {"amazon.com", Â
 		"ebay.com", Â
 		"facebook.com", "facebook.net", Â
-		"github.com", ".githubusercontent.com", "google.com", ".googleapis.com", "googleusercontent.com", "gstatic.com", Â
+		"github.com", "*.githubusercontent.com", Â
+		"google.com", "google-analytics.com","*.googleapis.com", "googleusercontent.com", "gstatic.com", Â
 		"instagram.com", "cdninstagram.com", Â
 		"netflix.com", Â
 		"paypal.com", Â
-		"twitter.com", Â
+		"twitter.com", "twimg.com", Â
 		"visualstudio.com", Â
 		"whatsapp.com", Â
 		"youtube.com"}
 	
-	# GRIDY - so be careful as ANY domain name CONTAINING any of these tokens (but NOT WHITE listed) will be considered junk!
+	# Items in this list will be fed AS-IS to Safari's cookie search field, which is GRIDY, i.e
+	# it uses CONTAINS logic to search for matches - so be careful or better yet
+	# protect valuable domains using the above whiteList! 
 	# IF FIRST Element is "*" then the junkList will be ignored and ALL EXCEPT whiteList will be deleted!
 	set junkList to {"*", ".co.", "addthis", "adobe", "affirm", "akc", "allure", "akamai", "azureedge", Â
 		"barron", "beaver", "bam-x", "bing", "bkrtx", "blue", "bold", "boot", "bounce", "btt", "b-cdn", Â
@@ -158,12 +164,27 @@ on main()
 								--log "Equals: " & (domainName is equal to whiteSite) as text
 								--log "Equals: " & (domainName is equal to whiteSite as text) as text
 								
-								# First option is a gridier option which may match more thann intennded but may be desired by some. 
-								--if rowSite contains whiteSite then
-								if first character of whiteSite = "." and domainName contains whiteSite then
-									set whiteListed to true
-									exit repeat
+								# INTENTIONALLY not comparing equality when "*" found!
+								if first character of whiteSite = "*" and last character of whiteSite = "*" then
+									if domainName contains (text 2 through -2 of whiteSite) then
+										log "Contains: " & (text 2 through -2 of whiteSite)
+										set whiteListed to true
+										exit repeat
+									end if
+								else if first character of whiteSite = "*" then
+									if domainName ends with text 2 through -1 of whiteSite then
+										log "Ends with: " & (text 2 through -1 of whiteSite)
+										set whiteListed to true
+										exit repeat
+									end if
+								else if last character of whiteSite = "*" then
+									if domainName begins with text 1 through -2 of whiteSite then
+										log "Begins with: " & (text 1 through -2 of whiteSite)
+										set whiteListed to true
+										exit repeat
+									end if
 								else if domainName is equal to whiteSite as text then
+									log "Equals to: " & whiteSite
 									set whiteListed to true
 									exit repeat
 								end if
@@ -181,14 +202,13 @@ on main()
 									-- FIND & DELETE DATABASE file
 									log domainName & ": Has Databases!"
 									
-									# Avoiding GRIDINESS of conatins 
+									# Limiting GRIDINESS of conatins by prefixing a "." and "_" if needed.		
 									set myFiles to (files of application "System Events"'s folder (databasesPath as text) where (name contains ("." & domainName)) or name contains ("_" & domainName))
 									set myFiles to myFiles & (folders of application "System Events"'s folder (indexedPath as text) where (name contains ("." & domainName)) or name contains ("_" & domainName))
 									
 									repeat with theFile in myFiles
 										log "Trash: " & name of theFile
 										move theFile to application "System Events"'s trash
-										--end if
 									end repeat
 									-- END FIND & DELETE
 								end if
