@@ -10,8 +10,9 @@ on main()
 	# NON GRIDY so use full name INCLUDING .com etc.!
 	set whiteList to {"amazon.com", Â
 		"ebay.com", Â
+		"facebook.com","facebook.net",Â
 		"github.com", "google.com", "ajax.googleapis.com", "fonts.googleapis.com", "googleusercontent.com", "gstatic.com", Â
-		"instagram.com", Â
+		"instagram.com", "cdninstagram.com", Â
 		"netflix.com", Â
 		"paypal.com", Â
 		"twitter.com", Â
