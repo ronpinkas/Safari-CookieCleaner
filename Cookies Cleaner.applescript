@@ -15,7 +15,7 @@ on main()
 		"ebay.com", Â
 		"facebook.com", "facebook.net", Â
 		"github.com", "*.githubusercontent.com", Â
-		"google.com", "google-analytics.com","*.googleapis.com", "googleusercontent.com", "gstatic.com", Â
+		"google.com", "google-analytics.com", "*.googleapis.com", "googleusercontent.com", "gstatic.com", Â
 		"instagram.com", "cdninstagram.com", Â
 		"netflix.com", Â
 		"paypal.com", Â
@@ -38,7 +38,7 @@ on main()
 	
 	set homePath to (path to home folder)
 	set databasesPath to alias ((homePath as text) & "Library:Safari:Databases")
-	set indexedPath to alias ((databasesPath as text) & "___IndexedDB")
+	set indexedDBPath to alias ((databasesPath as text) & "___IndexedDB")
 	
 	tell application "System Events"
 		tell process "Safari"
@@ -51,9 +51,9 @@ on main()
 			repeat while not (exists window 1)
 				delay 0.01
 			end repeat
-			set windowPrefernces to window 1
+			set windowPreferences to window 1
 			
-			tell windowPrefernces
+			tell windowPreferences
 				click button "Privacy" of toolbar 1
 				# WAIT till opened.
 				repeat while not (exists button "Manage Website DataÉ" of group 1 of group 1)
@@ -79,44 +79,39 @@ on main()
 				end try
 				
 				# SEARCH MATCHES for ALL Specifiers of junkList
-				repeat with junk in junkList
-					if junk is equal to "" and junk is not equal to first item of junkList then
+				repeat with theJunkSpecifier in junkList
+					if theJunkSpecifier is equal to "" and theJunkSpecifier is not equal to first item of junkList then
 						display notification "Invalid junk specifier \"\""
-						set junk to "*empty specifier ignored*"
+						set theJunkSpecifier to "*empty specifier ignored*"
 					end if
 					
 					select searchField
-					set value of searchField to junk
+					set value of searchField to theJunkSpecifier
 					
-					-- WAIT UNTIL Search terminates, with either some rows OR "No Saved Website Data" is displayed!
-					set noJunk to false
-					repeat
+					-- WAIT UNTIL Search finalizes, with either some rows OR "No Saved Website Data" is displayed!
+					set prospectiveMatches to true
+					repeat while prospectiveMatches
 						delay 0.01
 						
 						if (count of (rows of myTable)) > 0 then
-							--display notification "Found prospective junk: '" & junk & "'"
+							--display notification "Found prospective junk for: '" & theJunkSpecifier & "'"
 							exit repeat
 						else
 							try
 								set uiChildren to entire contents of sheet 1
 								
-								repeat with itemIterator in uiChildren
-									if class of itemIterator is static text and value of itemIterator contains "No Saved Website Data" then
-										set noJunk to true
+								repeat with theUIChild in uiChildren
+									if class of theUIChild is static text and value of theUIChild contains "No Saved Website Data" then
+										set prospectiveMatches to false
 										exit repeat
 									end if
 								end repeat
-								
-								if noJunk then
-									--display notification "No junk found for: " & junk
-									exit repeat
-								end if
 							end try
 						end if
 					end repeat
-					-- END WAIT					
+					-- END WAIT (repeat while prospectiveMatches					
 					
-					set junkRows to count of (rows of myTable)
+					set prospectiveJunkRows to count of (rows of myTable)
 					set whiteListed to false
 					set rowSite to ""
 					set rowIndex to 1
@@ -124,8 +119,8 @@ on main()
 					#Reset Scroll bar to TOP, incase Windos was alreasdy opened, and scrolled by User
 					set value of scroll bar 1 of scroll area 1 of sheet 1 to 0
 					
-					# PROCESS ALL Lines MATCHING junk specifier
-					repeat while junkRows ³ rowIndex
+					# PROCESS ALL Lines MATCHING the junk specifier
+					repeat while prospectiveJunkRows ³ rowIndex
 						try
 							set selectedRow to row rowIndex of myTable
 							select selectedRow
@@ -137,13 +132,13 @@ on main()
 								log "Cookie: '" & rowSite & "'"
 								log "Domain: '" & domainName & "'"
 								log "rowIndes: " & rowIndex as text
-								log "junkRows: " & junkRows as text
+								log "prospectiveJunkRows: " & prospectiveJunkRows as text
 								log "count of rows: " & (count of (rows of myTable)) as text
 							end if
 							
-							-- AppleScript indexing is 1 based BUT item 0 maps to 1 so it can nbe very confusing!
+							-- AppleScript indexing is 1 based BUT item 0 maps to 1 so it can be confusing!
 							-- SCROLL so selected row (as well as at least the prior and next rows) are in the VISIBLE Scroll port.
-							repeat while (count of value of attribute "AXVisibleChildren" of row (my min(rowIndex + 1, junkRows)) of myTable) = 0
+							repeat while (count of value of attribute "AXVisibleChildren" of row (my min(rowIndex + 1, prospectiveJunkRows)) of myTable) = 0
 								--tell scroll area 1 of sheet 1 to perform action "AXScrollUpByPage"
 								click button 1 of scroll bar 1 of scroll area 1 of sheet 1
 								delay 0.01
@@ -197,14 +192,14 @@ on main()
 							else
 								log "Delete: " & rowSite
 								
-								# DATABASE first
+								# DELETE DATABASE first if present.
 								if rowSite contains "Databases" then
 									-- FIND & DELETE DATABASE file
 									log domainName & ": Has Databases!"
 									
-									# Limiting GRIDINESS of conatins by prefixing a "." and "_" if needed.		
+									# Limiting GRIDINESS of conatins by prefixing a "." and "_"									
 									set myFiles to (files of application "System Events"'s folder (databasesPath as text) where (name contains ("." & domainName)) or name contains ("_" & domainName))
-									set myFiles to myFiles & (folders of application "System Events"'s folder (indexedPath as text) where (name contains ("." & domainName)) or name contains ("_" & domainName))
+									set myFiles to myFiles & (folders of application "System Events"'s folder (indexedDBPath as text) where (name contains ("." & domainName)) or name contains ("_" & domainName))
 									
 									repeat with theFile in myFiles
 										log "Trash: " & name of theFile
@@ -212,11 +207,11 @@ on main()
 									end repeat
 									-- END FIND & DELETE
 								end if
-								-- END DATABASE
+								-- END DELETE DATABASE
 								
-								# DELETE!
+								# DELETE COOCKIE!
 								set repeatCount to 0
-								repeat until (repeatCount > 10) or (junkRows > (count of (rows of myTable)))
+								repeat until (repeatCount > 10) or (prospectiveJunkRows > (count of (rows of myTable)))
 									set repeatCount to repeatCount + 1
 									
 									# Because row may be last row and might have been deleted just after above until was evaluated.
@@ -231,30 +226,30 @@ on main()
 									end try
 								end repeat
 								
-								if junkRows = (count of (rows of myTable)) then
+								if prospectiveJunkRows = (count of (rows of myTable)) then
 									log "Failed deleting: " & rowSite
 								end if
-								-- END DELETE
+								-- END DELETE COOCKIE
 							end if
-						on error msg number n from f to t partial result p
-							--log "*** ERROR! " & msg
-							error msg number n from f to t partial result p
+						on error errorMessage number errorNumber from f to t partial result p
+							--log "*** ERROR! " & errorMessage
+							error errorMessage number errorNumber from f to t partial result p
 						end try
 						
 						# Here instead of just after DELETE because it might also change outside of our control!
-						set junkRows to count of (rows of myTable)
+						set prospectiveJunkRows to count of (rows of myTable)
 						
 						if debugLog then
 							log "-------- BOTTOM"
 							log "Cookie: '" & rowSite & "'"
 							log "Domain: '" & domainName & "'"
 							log "rowIndes: " & rowIndex as text
-							log "junkRows: " & junkRows as text
+							log "prospectiveJunkRows: " & prospectiveJunkRows as text
 							log "count of rows: " & (count of (rows of myTable)) as text
 						end if
-					end repeat #while junkRows > rowIndex	
+					end repeat #while prospectiveJunkRows > rowIndex	
 					-- END PROCESS ALL Lines MATCHING
-				end repeat #with junk in junkList
+				end repeat #with theJunkSpecifier in junkList
 				-- ENND SEARCH
 				
 				click button "Done" of sheet 1
@@ -265,22 +260,11 @@ on main()
 				# This is hard coded but works
 				--click button 1
 				
-				# For some odd reason both these stryles fails :(
-				--click (button where role description is "close button")
-				--set closeButton to first item of buttons where role description = "close button"
-				--click closeButton
-				
-				# Resorting to manual iteration.
-				repeat with theBtn in buttons
-					try
-						--log "'" & role description of theBtn & "'"
-						if role description of theBtn = "close button" then
-							click theBtn
-							exit repeat
-						end if
-					end try
-				end repeat
-			end tell
+				# WARNING: this line will FAIL upon removal of the () around <butons where...>
+				# because the <where ...> clause will be wrongly applied the implied
+				# <of windowPreferences> target instead of its <buttons> collection!	
+				click button 1 of (buttons where role description = "close button")
+			end tell #windowPreferences 
 		end tell
 	end tell
 end main
