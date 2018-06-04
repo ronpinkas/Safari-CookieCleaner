@@ -21,7 +21,7 @@ on main()
 		"paypal.com", Â
 		"twitter.com", "twimg.com", Â
 		"visualstudio.com", Â
-		"whatsapp.com", Â
+		"whatsapp.*", Â
 		"youtube.com"}
 	
 	# Items in this list will be fed AS-IS to Safari's cookie search field, which is GRIDY, i.e
