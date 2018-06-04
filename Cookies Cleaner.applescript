@@ -40,17 +40,19 @@ on main()
 	set databasesPath to alias ((homePath as text) & "Library:Safari:Databases")
 	set indexedDBPath to alias ((databasesPath as text) & "___IndexedDB")
 	
+	tell application "Safari" to activate
+	
 	tell application "System Events"
 		tell process "Safari"
-			activate
 			set frontmost to true
 			
 			set myMenu to menu "Safari" of menu bar item "Safari" of menu bar 1
 			click menu item "PreferencesÉ" of myMenu
-			
-			repeat while not (exists window 1)
+			# WAIT till opened.
+			repeat until (exists button "Privacy" of toolbar 1) of window 1
 				delay 0.01
 			end repeat
+			
 			set windowPreferences to window 1
 			
 			tell windowPreferences
@@ -72,7 +74,7 @@ on main()
 				-- Allow ALL except WHITE list to be considered JUNK by setting FIRST Specifier to "*"! 
 				try
 					if (count of whiteList) > 0 and first item of junkList is equal to "*" then
-						# will neveer get here if whiteList is undefined or empty!
+						# will never get here if whiteList is undefined or empty!
 						# Simulate an ALL is JUNK mode - ignoring the rest of junkList.
 						set junkList to {""}
 					end if
@@ -131,7 +133,7 @@ on main()
 								log "-------- TOP"
 								log "Cookie: '" & rowSite & "'"
 								log "Domain: '" & domainName & "'"
-								log "rowIndes: " & rowIndex as text
+								log "rowIndex: " & rowIndex as text
 								log "prospectiveJunkRows: " & prospectiveJunkRows as text
 								log "count of rows: " & (count of (rows of myTable)) as text
 							end if
@@ -214,7 +216,7 @@ on main()
 								repeat until (repeatCount > 10) or (prospectiveJunkRows > (count of (rows of myTable)))
 									set repeatCount to repeatCount + 1
 									
-									# Because row may be last row and might have been deleted just after above until was evaluated.
+									# Because row may be last row and might have been deleted just after above <until...> was evaluated.
 									try
 										# Row must be SELECTED (even if was) to enable the Remove button!
 										repeat until selected of selectedRow
@@ -243,7 +245,7 @@ on main()
 							log "-------- BOTTOM"
 							log "Cookie: '" & rowSite & "'"
 							log "Domain: '" & domainName & "'"
-							log "rowIndes: " & rowIndex as text
+							log "rowIndex: " & rowIndex as text
 							log "prospectiveJunkRows: " & prospectiveJunkRows as text
 							log "count of rows: " & (count of (rows of myTable)) as text
 						end if
