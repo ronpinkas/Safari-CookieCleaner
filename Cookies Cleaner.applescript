@@ -58,13 +58,13 @@ on main()
 			tell windowPreferences
 				click button "Privacy" of toolbar 1
 				# WAIT till opened.
-				repeat while not (exists button "Manage Website Data…" of group 1 of group 1)
+				repeat until (exists button "Manage Website Data…" of group 1 of group 1)
 					delay 0.01
 				end repeat
 				
 				click button "Manage Website Data…" of group 1 of group 1
 				# WAIT till opened.
-				repeat while not (exists table 1 of scroll area 1 of sheet 1)
+				repeat until (exists table 1 of scroll area 1 of sheet 1)
 					delay 0.01
 				end repeat
 				
