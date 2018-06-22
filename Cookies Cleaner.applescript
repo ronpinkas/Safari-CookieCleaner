@@ -50,7 +50,7 @@ on main()
 			click menu item "PreferencesÉ" of myMenu
 			# WAIT till opened.
 			repeat until (exists button "Privacy" of toolbar 1) of window 1
-				delay 0.01
+				my yield(0.01)
 			end repeat
 			
 			set windowPreferences to window 1
@@ -59,13 +59,13 @@ on main()
 				click button "Privacy" of toolbar 1
 				# WAIT till opened.
 				repeat until (exists button "Manage Website DataÉ" of group 1 of group 1)
-					delay 0.01
+					my yield(0.01)
 				end repeat
 				
 				click button "Manage Website DataÉ" of group 1 of group 1
 				# WAIT till opened.
 				repeat until (exists table 1 of scroll area 1 of sheet 1)
-					delay 0.01
+					my yield(0.01)
 				end repeat
 				
 				set myTable to table 1 of scroll area 1 of sheet 1
@@ -82,6 +82,12 @@ on main()
 				
 				# SEARCH MATCHES for ALL Specifiers of junkList
 				repeat with theJunkSpecifier in junkList
+					# User might select the browsing window!
+					if value of attribute "AXMain" of windowPreferences is false then
+						log "Aborted by user!"
+						exit repeat
+					end if
+					
 					if theJunkSpecifier is equal to "" and theJunkSpecifier is not equal to first item of junkList then
 						display notification "Invalid junk specifier \"\""
 						set theJunkSpecifier to "*empty specifier ignored*"
@@ -93,7 +99,7 @@ on main()
 					-- WAIT UNTIL Search finalizes, with either some rows OR "No Saved Website Data" is displayed!
 					set prospectiveMatches to true
 					repeat while prospectiveMatches
-						delay 0.01
+						my yield(0.01)
 						
 						if (count of (rows of myTable)) > 0 then
 							--display notification "Found prospective junk for: '" & theJunkSpecifier & "'"
@@ -123,6 +129,12 @@ on main()
 					
 					# PROCESS ALL Lines MATCHING the junk specifier
 					repeat while prospectiveJunkRows ³ rowIndex
+						# User might select the browsing window!
+						if value of attribute "AXMain" of windowPreferences is false then
+							log "Aborted by user!"
+							exit repeat
+						end if
+						
 						try
 							set selectedRow to row rowIndex of myTable
 							select selectedRow
@@ -143,12 +155,12 @@ on main()
 							repeat while (count of value of attribute "AXVisibleChildren" of row (my min(rowIndex + 1, prospectiveJunkRows)) of myTable) = 0
 								--tell scroll area 1 of sheet 1 to perform action "AXScrollUpByPage"
 								click button 1 of scroll bar 1 of scroll area 1 of sheet 1
-								delay 0.01
+								my yield(0.01)
 							end repeat
 							repeat while (count of value of attribute "AXVisibleChildren" of row (my max(rowIndex - 1, 1)) of myTable) = 0
 								--tell scroll area 1 of sheet 1 to perform action "AXScrollDownByPage"
 								click button 2 of scroll bar 1 of scroll area 1 of sheet 1
-								delay 0.01
+								my yield(0.01)
 							end repeat
 							-- END SCROLL
 							
@@ -221,15 +233,16 @@ on main()
 										# Row must be SELECTED (even if was) to enable the Remove button!
 										repeat until selected of selectedRow
 											select selectedRow
-											delay 0.01
+											my yield(0.01)
 										end repeat
 										click button "Remove" of sheet 1
-										delay 0.1
+										my yield(0.01)
 									end try
 								end repeat
 								
 								if prospectiveJunkRows = (count of (rows of myTable)) then
 									log "Failed deleting: " & rowSite
+									set rowIndex to rowIndex + 1
 								end if
 								-- END DELETE COOCKIE
 							end if
@@ -303,3 +316,8 @@ end max
 on run {}
 	main()
 end run
+
+on yield(seconds)
+	--delay seconds
+	do shell script "sleep " & seconds
+end yield
